@@ -35,11 +35,11 @@
             padding: 20px;
         }
 
-        /* Mobile Container Frame (9:16 aspect ratio simulation) */
+        /* Mobile Container Frame (9:16 aspect ratio simulation, wider footprint) */
         .phone-frame {
             width: 100%;
-            max-width: 390px;
-            height: 844px;
+            max-width: 440px;
+            height: 880px;
             background-color: var(--parchment);
             border-radius: 40px;
             box-shadow: 0 20px 40px rgba(38, 36, 34, 0.12);
@@ -119,7 +119,7 @@
         .content {
             flex: 1;
             overflow-y: auto;
-            padding: 20px;
+            padding: 24px;
         }
 
         .section-title {
@@ -207,7 +207,7 @@
     <div class="phone-frame">
         <div id="splash-overlay">
             <video id="splash-video" autoplay muted playsinline>
-                <source src="http://googleusercontent.com/generated_video_content/606397470922022818" type="video/mp4">
+                <source src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4" type="video/mp4">
                 Your browser does not support the video tag.
             </video>
         </div>
@@ -274,6 +274,12 @@
                 // Mark as played for this session
                 sessionStorage.setItem("sgs_animation_played", "true");
 
+                // Attempt to play and handle potential browser autoplay restrictions smoothly
+                splashVideo.play().catch(error => {
+                    console.log("Autoplay blocked, fading out overlay:", error);
+                    fadeOutSplash(splashOverlay);
+                });
+
                 // Automatically fade out overlay when video ends
                 splashVideo.onended = () => {
                     fadeOutSplash(splashOverlay);
@@ -291,7 +297,9 @@
         function fadeOutSplash(element) {
             element.style.opacity = '0';
             setTimeout(() => {
-                element.remove();
+                if (element.parentNode) {
+                    element.remove();
+                }
             }, 800);
         }
 
