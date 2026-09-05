@@ -244,7 +244,7 @@
 
       <label class="check-item" style="margin-top: 18px; align-items: flex-start;">
         <input type="checkbox" id="tosCheck" style="margin-top: 2px;">
-        <span style="line-height: 1.4;">I agree to the Terms of Service and Privacy Policy, and understand my email is collected for studio updates.</span>
+        <span style="line-height: 1.4;">I agree to the Terms of Service and Privacy Policy, and understand my email is collected for future communications.</span>
       </label>
 
       <div id="formError" class="error-msg" style="display:none;"></div>
@@ -297,7 +297,7 @@
 // --- SUPABASE INITIALIZATION ---
 const supabaseUrl = 'https://ldgibazgenqydvjasclm.supabase.co';
 const supabaseKey = 'sb_publishable_1-vPBMYPwBez5ZGS1R7ZFw_X3MC2Ajk';
-const db = window.supabase.createClient(supabaseUrl, supabaseKey); // FIX: renamed to db
+const db = window.supabase.createClient(supabaseUrl, supabaseKey);
 
 const OWNER_SECRET = 'leliko';
 const CLAY_OPTIONS = ['White Clay', 'Hazelnut', 'Other'];
