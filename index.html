@@ -35,7 +35,7 @@
             padding: 20px;
         }
 
-        /* Mobile Container Frame (9:16 aspect ratio simulation, wider footprint) */
+        /* Phone frame layout matching your preference */
         .phone-frame {
             width: 100%;
             max-width: 440px;
@@ -230,7 +230,7 @@
                     <input type="text" id="glaze-name" placeholder="e.g., Autumn Speckled Shino">
                 </div>
 
-                <div class="form-group">
+                <div class="main-clay form-group">
                     <label for="clay-body">Clay Body</label>
                     <select id="clay-body">
                         <option>Brown Stoneware</option>
@@ -260,7 +260,6 @@
     </div>
 
     <script>
-        // Session storage check to ensure the video only plays once per session on open
         document.addEventListener("DOMContentLoaded", () => {
             const splashOverlay = document.getElementById("splash-overlay");
             const splashVideo = document.getElementById("splash-video");
@@ -268,24 +267,19 @@
             const hasSeenAnimation = sessionStorage.getItem("sgs_animation_played");
 
             if (hasSeenAnimation) {
-                // If already played this session, remove immediately
                 splashOverlay.remove();
             } else {
-                // Mark as played for this session
                 sessionStorage.setItem("sgs_animation_played", "true");
 
-                // Attempt to play and handle potential browser autoplay restrictions smoothly
                 splashVideo.play().catch(error => {
-                    console.log("Autoplay blocked, fading out overlay:", error);
+                    console.log("Autoplay handled:", error);
                     fadeOutSplash(splashOverlay);
                 });
 
-                // Automatically fade out overlay when video ends
                 splashVideo.onended = () => {
                     fadeOutSplash(splashOverlay);
                 };
 
-                // Fallback timeout in case video loading is delayed
                 setTimeout(() => {
                     if (document.body.contains(splashOverlay)) {
                         fadeOutSplash(splashOverlay);
@@ -303,7 +297,6 @@
             }, 800);
         }
 
-        // Simple tab state handler for user preference mockup
         function switchTab(tabName) {
             const newTab = document.getElementById('tab-new');
             const browseTab = document.getElementById('tab-browse');
