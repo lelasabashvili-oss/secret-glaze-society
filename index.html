@@ -190,12 +190,6 @@
       <label class="field-label">Email (kept private) <span class="req-star">*</span></label>
       <input type="email" id="makerEmail" placeholder="your@email.com">
 
-      <label class="field-label">Visibility <span class="req-star">*</span></label>
-      <div class="seg-row" id="visibilitySeg">
-        <div class="seg-opt" data-val="public">Public</div>
-        <div class="seg-opt" data-val="private">Private</div>
-      </div>
-
       <label class="field-label">Piece name <span class="req-star">*</span></label>
       <input type="text" id="pieceName" placeholder="Speckled tall vase">
 
@@ -370,7 +364,6 @@ function setupSegGroup(containerId, onSelect) {
   return { get: () => selected, clear: () => { selected = null; container.querySelectorAll('.seg-opt').forEach(o => o.classList.remove('selected')); } };
 }
 
-const visibilitySel = setupSegGroup('visibilitySeg', () => {});
 const claySel = setupSegGroup('claySeg', (val) => { document.getElementById('clayOtherInput').style.display = val === 'Other' ? 'block' : 'none'; });
 const underglazeSel = setupSegGroup('underglazeSeg', (val) => { document.getElementById('underglazeDetails').style.display = val === 'yes' ? 'block' : 'none'; });
 const underglazeTypeSel = setupSegGroup('underglazeTypeSeg', (val) => { document.getElementById('underglazeTypeOther').style.display = val === 'Other' ? 'block' : 'none'; });
@@ -549,7 +542,6 @@ document.getElementById('submitBtn').addEventListener('click', async () => {
   const makerName = document.getElementById('makerName').value.trim();
   const makerEmail = document.getElementById('makerEmail').value.trim();
   const tosAgreed = document.getElementById('tosCheck').checked;
-  const visibility = visibilitySel.get();
   const pieceName = document.getElementById('pieceName').value.trim();
   const photoList = photos.filter(p => p);
   const clayType = claySel.get();
@@ -559,7 +551,6 @@ document.getElementById('submitBtn').addEventListener('click', async () => {
 
   if (!makerName) return showErr('Enter your name.');
   if (!makerEmail || !makerEmail.includes('@')) return showErr('Enter a valid email.');
-  if (!visibility) return showErr('Choose public or private.');
   if (!pieceName) return showErr('Enter a piece name.');
   if (photoList.length === 0) return showErr('Add at least one photo.');
   if (!clayType) return showErr('Choose a clay type.');
@@ -617,7 +608,7 @@ document.getElementById('submitBtn').addEventListener('click', async () => {
       owner_id: myOwnerId,
       maker_name: makerName,
       email: makerEmail,
-      visibility: visibility,
+      visibility: 'public',
       piece_name: pieceName,
       photos: photoUrls,
       clay_type: clayType === 'Other' ? clayOther : clayType,
@@ -652,7 +643,6 @@ document.getElementById('submitBtn').addEventListener('click', async () => {
 
 function resetForm() {
   document.getElementById('makerName').value = '';
-  visibilitySel.clear();
   document.getElementById('pieceName').value = '';
   photos = [null, null, null];
   renderPhotoGrid();
@@ -701,7 +691,7 @@ async function loadIndex() {
 }
 
 function visibleEntries() {
-  return entriesCache.filter(e => e.visibility === 'public' || e.owner_id === myOwnerId);
+  return entriesCache;
 }
 
 function renderFeed() {
@@ -813,7 +803,6 @@ async function openDetail(id) {
     <div class="detail-row"><span class="k">Made by</span><span class="v">${escapeHtml(entry.maker_name)}</span></div>
     <div class="detail-row"><span class="k">Date</span><span class="v">${date}</span></div>
     <div class="detail-row"><span class="k">Clay type</span><span class="v">${escapeHtml(entry.clay_type)}</span></div>
-    <div class="detail-row"><span class="k">Visibility</span><span class="v">${entry.visibility === 'private' ? 'Private' : 'Public'}</span></div>
 
     <div class="detail-section-title">Bisque fire</div>
     <div class="detail-row"><span class="k">Underglaze</span><span class="v">${entry.bisque_fire.hasUnderglaze ? 'Yes' : 'No'}</span></div>
@@ -916,16 +905,14 @@ async function loadAdmin() {
         </div>
       `).join('')}
     `;
-    block.querySelectorAll('.admin-comment button').forEach(btn => {
-      btn.addEventListener('click', async () => {
-        const entryId = btn.dataset.entry;
-        const reactionId = btn.dataset.reaction;
-        const e2 = data.find(x => x.id === entryId);
-        const newReactions = e2.reactions.filter(r => r.id !== reactionId);
-        await db.from('glaze_entries').update({ reactions: newReactions }).eq('id', entryId);
-        loadAdmin();
-      });
-    });
+    block.querySelectorAll('.admin-comment button').forEach(btn =>.addEventListener('click', async () => {
+      const entryId = btn.dataset.entry;
+      const reactionId = btn.dataset.reaction;
+      const e2 = data.find(x => x.id === entryId);
+      const newReactions = e2.reactions.filter(r => r.id !== reactionId);
+      await db.from('glaze_entries').update({ reactions: newReactions }).eq('id', entryId);
+      loadAdmin();
+    }));
     container.appendChild(block);
   });
 }
