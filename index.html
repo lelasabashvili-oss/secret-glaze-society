@@ -35,7 +35,6 @@
             padding: 20px;
         }
 
-        /* Phone frame layout matching your preference */
         .phone-frame {
             width: 100%;
             max-width: 440px;
@@ -71,7 +70,6 @@
             object-fit: cover;
         }
 
-        /* Header Section */
         header {
             text-align: center;
             padding: 24px 20px 16px 20px;
@@ -89,7 +87,6 @@
             text-transform: uppercase;
         }
 
-        /* Navigation Tab Bar */
         .nav-tabs {
             display: flex;
             justify-content: space-around;
@@ -115,7 +112,6 @@
             color: #FFFFFF;
         }
 
-        /* Main Content Scroll Area */
         .content {
             flex: 1;
             overflow-y: auto;
@@ -131,7 +127,6 @@
             padding-bottom: 4px;
         }
 
-        /* Form Styling */
         .glaze-form {
             display: flex;
             flex-direction: column;
@@ -191,7 +186,6 @@
             opacity: 0.9;
         }
 
-        /* Footer */
         footer {
             text-align: center;
             padding: 14px;
@@ -205,8 +199,9 @@
 <body>
 
     <div class="phone-frame">
+        <!-- Video Splash Overlay -->
         <div id="splash-overlay">
-            <video id="splash-video" autoplay muted playsinline>
+            <video id="splash-video" autoplay muted playsinline webkit-playsinline>
                 <source src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4" type="video/mp4">
                 Your browser does not support the video tag.
             </video>
@@ -230,7 +225,7 @@
                     <input type="text" id="glaze-name" placeholder="e.g., Autumn Speckled Shino">
                 </div>
 
-                <div class="main-clay form-group">
+                <div class="form-group">
                     <label for="clay-body">Clay Body</label>
                     <select id="clay-body">
                         <option>Brown Stoneware</option>
@@ -271,15 +266,17 @@
             } else {
                 sessionStorage.setItem("sgs_animation_played", "true");
 
+                // Safely attempt playback without destroying overlay on restriction
                 splashVideo.play().catch(error => {
-                    console.log("Autoplay handled:", error);
-                    fadeOutSplash(splashOverlay);
+                    console.log("Autoplay restriction noted:", error);
                 });
 
+                // Fade out smoothly when video ends
                 splashVideo.onended = () => {
                     fadeOutSplash(splashOverlay);
                 };
 
+                // Safety fallback timer (11 seconds)
                 setTimeout(() => {
                     if (document.body.contains(splashOverlay)) {
                         fadeOutSplash(splashOverlay);
