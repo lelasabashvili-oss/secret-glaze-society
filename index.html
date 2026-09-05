@@ -905,14 +905,16 @@ async function loadAdmin() {
         </div>
       `).join('')}
     `;
-    block.querySelectorAll('.admin-comment button').forEach(btn =>.addEventListener('click', async () => {
-      const entryId = btn.dataset.entry;
-      const reactionId = btn.dataset.reaction;
-      const e2 = data.find(x => x.id === entryId);
-      const newReactions = e2.reactions.filter(r => r.id !== reactionId);
-      await db.from('glaze_entries').update({ reactions: newReactions }).eq('id', entryId);
-      loadAdmin();
-    }));
+    block.querySelectorAll('.admin-comment button').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const entryId = btn.dataset.entry;
+        const reactionId = btn.dataset.reaction;
+        const e2 = data.find(x => x.id === entryId);
+        const newReactions = e2.reactions.filter(r => r.id !== reactionId);
+        await db.from('glaze_entries').update({ reactions: newReactions }).eq('id', entryId);
+        loadAdmin();
+      });
+    });
     container.appendChild(block);
   });
 }
