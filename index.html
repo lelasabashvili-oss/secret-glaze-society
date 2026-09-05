@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Secret Glaze Society - New Entry</title>
+    <title>Secret Glaze Society - Experimental</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Plus+Jakarta+Sans:wght@300;400;500&display=swap" rel="stylesheet">
@@ -13,7 +13,6 @@
             --ink: #262422;
             --terracotta: #C86D51;
             --sage: #7A8B79;
-            --dusty-rose: #D4A5A5;
             --border-subtle: #E2DBD0;
             --card-bg: #FFFFFF;
         }
@@ -37,8 +36,8 @@
 
         .phone-frame {
             width: 100%;
-            max-width: 480px;
-            height: 900px;
+            max-width: 440px;
+            height: 880px;
             background-color: var(--parchment);
             border-radius: 36px;
             box-shadow: 0 20px 40px rgba(38, 36, 34, 0.1);
@@ -49,7 +48,7 @@
             border: 6px solid #EAE4DC;
         }
 
-        /* Video Splash Overlay Layer */
+        /* Splash Video Overlay */
         #splash-overlay {
             position: absolute;
             top: 0;
@@ -57,11 +56,11 @@
             width: 100%;
             height: 100%;
             background-color: var(--parchment);
-            z-index: 200;
+            z-index: 100;
             display: flex;
             justify-content: center;
             align-items: center;
-            transition: opacity 0.8s ease;
+            transition: opacity 0.6s ease;
         }
 
         #splash-overlay video {
@@ -72,16 +71,16 @@
 
         header {
             text-align: center;
-            padding: 28px 20px 18px 20px;
+            padding: 24px 20px 16px 20px;
             background-color: #F3EFE9;
             border-bottom: 1px solid var(--border-subtle);
         }
 
         header h1 {
             font-family: 'Cormorant Garamond', serif;
-            font-size: 1.8rem;
+            font-size: 1.7rem;
             font-weight: 500;
-            letter-spacing: 0.12em;
+            letter-spacing: 0.1em;
             color: var(--ink);
             text-transform: uppercase;
         }
@@ -103,6 +102,8 @@
             padding: 6px 16px;
             border-radius: 20px;
             cursor: pointer;
+            border: none;
+            background: transparent;
             transition: all 0.2s ease;
         }
 
@@ -114,22 +115,30 @@
         .content {
             flex: 1;
             overflow-y: auto;
-            padding: 28px;
+            padding: 24px;
+        }
+
+        .view-section {
+            display: none;
+        }
+
+        .view-section.active {
+            display: block;
         }
 
         .section-title {
             font-family: 'Cormorant Garamond', serif;
-            font-size: 1.35rem;
-            margin-bottom: 16px;
+            font-size: 1.25rem;
+            margin-bottom: 14px;
             color: var(--ink);
             border-bottom: 1px solid var(--border-subtle);
-            padding-bottom: 6px;
+            padding-bottom: 4px;
         }
 
         .glaze-form {
             display: flex;
             flex-direction: column;
-            gap: 18px;
+            gap: 16px;
         }
 
         .form-group {
@@ -150,9 +159,9 @@
             background-color: var(--card-bg);
             border: 1px solid var(--border-subtle);
             border-radius: 10px;
-            padding: 12px 14px;
+            padding: 12px;
             font-family: 'Plus Jakarta Sans', sans-serif;
-            font-size: 0.95rem;
+            font-size: 0.9rem;
             color: var(--ink);
             outline: none;
             transition: border-color 0.2s;
@@ -164,7 +173,7 @@
 
         textarea {
             resize: none;
-            height: 90px;
+            height: 80px;
         }
 
         .btn-submit {
@@ -177,7 +186,7 @@
             font-weight: 500;
             font-size: 0.95rem;
             cursor: pointer;
-            margin-top: 6px;
+            margin-top: 10px;
             transition: opacity 0.2s;
         }
 
@@ -185,10 +194,16 @@
             opacity: 0.9;
         }
 
+        .browse-placeholder {
+            font-size: 0.9rem;
+            color: #555;
+            line-height: 1.5;
+        }
+
         footer {
             text-align: center;
             padding: 14px;
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             color: #888;
             border-top: 1px solid var(--border-subtle);
             background-color: #F3EFE9;
@@ -198,7 +213,6 @@
 <body>
 
     <div class="phone-frame">
-        <!-- Video Splash Overlay (Plays once per session) -->
         <div id="splash-overlay">
             <video id="splash-video" autoplay muted playsinline webkit-playsinline>
                 <source src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4" type="video/mp4">
@@ -211,41 +225,47 @@
         </header>
 
         <nav class="nav-tabs">
-            <a class="nav-tab active" id="tab-new" onclick="switchTab('new')">New Entry</a>
-            <a class="nav-tab" id="tab-browse" onclick="switchTab('browse')">Browse Log</a>
+            <button class="nav-tab active" id="btn-new" data-target="view-new">New Entry</button>
+            <button class="nav-tab" id="btn-browse" data-target="view-browse">Browse Log</button>
         </nav>
 
         <div class="content">
-            <h2 class="section-title">New Glaze Combination</h2>
-            
-            <form class="glaze-form" onsubmit="event.preventDefault(); alert('Glaze entry saved successfully.');">
-                <div class="form-group">
-                    <label for="glaze-name">Glaze Code / Name</label>
-                    <input type="text" id="glaze-name" placeholder="e.g., Autumn Speckled Shino">
-                </div>
+            <div id="view-new" class="view-section active">
+                <h2 class="section-title">New Glaze Combination</h2>
+                <form class="glaze-form" id="glaze-form">
+                    <div class="form-group">
+                        <label for="glaze-name">Glaze Code / Name</label>
+                        <input type="text" id="glaze-name" placeholder="e.g., Autumn Speckled Shino" required>
+                    </div>
 
-                <div class="form-group">
-                    <label for="clay-body">Clay Body</label>
-                    <select id="clay-body">
-                        <option>Brown Stoneware</option>
-                        <option>White Porcelain</option>
-                        <option>Speckled Buff</option>
-                        <option>Terracotta</option>
-                    </select>
-                </div>
+                    <div class="form-group">
+                        <label for="clay-body">Clay Body</label>
+                        <select id="clay-body">
+                            <option>Brown Stoneware</option>
+                            <option>White Porcelain</option>
+                            <option>Speckled Buff</option>
+                            <option>Terracotta</option>
+                        </select>
+                    </div>
 
-                <div class="form-group">
-                    <label for="firing-temp">Firing Cone / Temp</label>
-                    <input type="text" id="firing-temp" placeholder="e.g., Cone 6 Oxidation">
-                </div>
+                    <div class="form-group">
+                        <label for="firing-temp">Firing Cone / Temp</label>
+                        <input type="text" id="firing-temp" placeholder="e.g., Cone 6 Oxidation">
+                    </div>
 
-                <div class="form-group">
-                    <label for="notes">Application & Layering Notes</label>
-                    <textarea id="notes" placeholder="Dipped twice in base, brushed Light Flux on rim..."></textarea>
-                </div>
+                    <div class="form-group">
+                        <label for="notes">Application & Layering Notes</label>
+                        <textarea id="notes" placeholder="Dipped twice in base, brushed Light Flux on rim..."></textarea>
+                    </div>
 
-                <button type="submit" class="btn-submit">Save to Formula Log</button>
-            </form>
+                    <button type="submit" class="btn-submit">Save to Formula Log</button>
+                </form>
+            </div>
+
+            <div id="view-browse" class="view-section">
+                <h2 class="section-title">Formula Archive</h2>
+                <p class="browse-placeholder">Your logged glaze combinations will appear here once saved from the New Entry form.</p>
+            </div>
         </div>
 
         <footer>
@@ -258,51 +278,68 @@
             const splashOverlay = document.getElementById("splash-overlay");
             const splashVideo = document.getElementById("splash-video");
             
-            const hasSeenAnimation = sessionStorage.getItem("sgs_video_watched");
+            // Session logic check
+            const hasSeenAnimation = sessionStorage.getItem("sgs_splash_played");
 
             if (hasSeenAnimation) {
                 splashOverlay.remove();
             } else {
-                sessionStorage.setItem("sgs_video_watched", "true");
+                sessionStorage.setItem("sgs_splash_played", "true");
 
-                splashVideo.play().catch(err => {
-                    console.log("Autoplay handled gracefully:", err);
-                });
+                // Force play command with catch to bypass strict browser rejections safely
+                let playPromise = splashVideo.play();
+                if (playPromise !== undefined) {
+                    playPromise.catch(() => {
+                        // If browser blocks autoplay completely, let user tap anywhere or dismiss quickly
+                        splashOverlay.style.cursor = "pointer";
+                        splashOverlay.onclick = () => dismissSplash();
+                    });
+                }
 
                 splashVideo.onended = () => {
-                    hideSplash(splashOverlay);
+                    dismissSplash();
                 };
 
-                // Fallback timeout in case video event fails
+                // Hard fallback in case video hangs
                 setTimeout(() => {
                     if (document.body.contains(splashOverlay)) {
-                        hideSplash(splashOverlay);
+                        dismissSplash();
                     }
                 }, 10000);
             }
-        });
 
-        function hideSplash(element) {
-            element.style.opacity = '0';
-            setTimeout(() => {
-                if (element.parentNode) {
-                    element.remove();
-                }
-            }, 800);
-        }
-
-        function switchTab(tabName) {
-            const newTab = document.getElementById('tab-new');
-            const browseTab = document.getElementById('tab-browse');
-
-            if (tabName === 'new') {
-                newTab.classList.add('active');
-                browseTab.classList.remove('active');
-            } else {
-                browseTab.classList.add('active');
-                newTab.classList.remove('active');
+            function dismissSplash() {
+                splashOverlay.style.opacity = '0';
+                setTimeout(() => {
+                    if (splashOverlay.parentNode) {
+                        splashOverlay.remove();
+                    }
+                }, 600);
             }
-        }
+
+            // Tab Navigation Logic
+            const tabs = document.querySelectorAll('.nav-tab');
+            const sections = document.querySelectorAll('.view-section');
+
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    tabs.forEach(t => t.classList.remove('active'));
+                    sections.forEach(s => s.classList.remove('active'));
+
+                    tab.classList.add('active');
+                    const targetView = document.getElementById(tab.getAttribute('data-target'));
+                    if (targetView) {
+                        targetView.classList.add('active');
+                    }
+                });
+            });
+
+            // Form Submit Action
+            document.getElementById('glaze-form').addEventListener('submit', (e) => {
+                e.preventDefault();
+                alert('Glaze formula saved successfully.');
+            });
+        });
     </script>
 </body>
 </html>
