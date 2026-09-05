@@ -1,0 +1,1051 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Secret Glaze Society</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Work+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  :root {
+    --paper: #F0EAE0;
+    --card: #FAF6EE;
+    --ink: #2B2620;
+    --ink-soft: #6E6558;
+    --poppy: #C1481F;
+    --poppy-dark: #8F3316;
+    --poppy-light: #F4DED2;
+    --sage: #77876B;
+    --sage-dark: #4F5D45;
+    --sage-light: #E7EEE1;
+    --gold: #C4922B;
+    --gold-light: #F5E9CC;
+    --line: #D6CBB8;
+    --danger: #B23B3B;
+    --danger-light: #F6DCDC;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'Work Sans', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+  }
+  .wrap { max-width: 780px; margin: 0 auto; padding: 0 0 90px; }
+  a { color: inherit; }
+
+  .app-header { padding: 22px 20px 0; position: relative; text-align: center; }
+  h1 { font-family: 'Fraunces', serif; font-weight: 700; font-size: 28px; margin: 0 0 2px; letter-spacing: -0.01em; line-height: 1.15; position: relative; z-index: 1; }
+  .subtitle { color: var(--ink-soft); font-size: 13px; margin: 0 0 16px; position: relative; z-index: 1; }
+  .header-branch { position: absolute; top: -8px; width: 84px; height: auto; opacity: 0.9; pointer-events: none; z-index: 0; }
+  .header-branch.left { left: -10px; }
+  .header-branch.right { right: -10px; }
+  @media (min-width: 480px) { .header-branch { width: 110px; } }
+
+  .install-banner { margin: 0 20px 14px; background: var(--gold-light); border: 1px solid var(--gold); border-radius: 10px; padding: 12px 14px; font-size: 13px; color: #5B4413; position: relative; display: none; }
+  .install-banner.show { display: block; }
+  .install-banner .dismiss { position: absolute; top: 8px; right: 10px; background: none; border: none; font-size: 16px; color: #5B4413; cursor: pointer; }
+  .install-banner b { font-weight: 600; }
+
+  .tabs { display: flex; padding: 0 20px; gap: 4px; border-bottom: 1px solid var(--line); background: var(--paper); position: sticky; top: 0; z-index: 5; }
+  .tab { font-family: 'Work Sans', sans-serif; font-size: 14px; font-weight: 500; padding: 10px 4px; margin-right: 20px; background: none; border: none; color: var(--ink-soft); cursor: pointer; border-bottom: 2px solid transparent; position: relative; top: 1px; }
+  .tab.active { color: var(--poppy); border-bottom: 2px solid var(--poppy); }
+
+  .view { display: none; padding: 18px 20px; }
+  .view.active { display: block; }
+
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 18px; }
+
+  label.field-label { display: block; font-size: 11.5px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: var(--ink-soft); margin: 18px 0 6px; }
+  label.field-label:first-child { margin-top: 0; }
+  .req-star { color: var(--poppy); }
+
+  input[type=text], input[type=email], select, textarea { width: 100%; font-family: 'Work Sans', sans-serif; font-size: 15px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 6px; background: #fff; color: var(--ink); }
+  input[type=text]:focus, input[type=email]:focus, select:focus, textarea:focus { outline: none; border-color: var(--poppy); }
+  textarea { resize: vertical; min-height: 54px; }
+
+  .seg-row { display: flex; gap: 8px; }
+  .seg-opt { flex: 1; text-align: center; padding: 10px 6px; border: 1px solid var(--line); border-radius: 6px; cursor: pointer; font-size: 13.5px; font-weight: 500; background: #fff; color: var(--ink-soft); }
+  .seg-opt.selected { border-color: var(--poppy); color: var(--poppy-dark); background: var(--poppy-light); }
+
+  .photo-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .photo-slot { aspect-ratio: 1; border: 2px dashed var(--line); border-radius: 8px; background: #fff; display: flex; align-items: center; justify-content: center; cursor: pointer; position: relative; overflow: hidden; font-size: 11px; color: var(--ink-soft); text-align: center; }
+  .photo-slot img { width: 100%; height: 100%; object-fit: cover; }
+  .photo-slot .remove-x { position: absolute; top: 3px; right: 3px; background: rgba(0,0,0,0.55); color: #fff; width: 20px; height: 20px; border-radius: 50%; border: none; font-size: 13px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+
+  .layer-block { border: 1px solid var(--line); border-radius: 8px; padding: 12px; margin-bottom: 10px; background: #fff; }
+  .layer-block .layer-title { font-family: 'JetBrains Mono', monospace; font-size: 11.5px; color: var(--ink-soft); margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
+  .layer-block .layer-title button { background: none; border: none; color: var(--danger); font-size: 12px; cursor: pointer; font-family: inherit; }
+  .check-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 4px; }
+  .check-item { display: flex; align-items: center; gap: 6px; font-size: 13px; }
+  .check-item input { width: 15px; height: 15px; flex-shrink: 0; }
+
+  .add-layer-btn { background: none; border: 1px dashed var(--sage-dark); border-radius: 6px; color: var(--sage-dark); font-size: 13px; font-weight: 500; padding: 9px 12px; cursor: pointer; width: 100%; }
+
+  .submit-btn { width: 100%; margin-top: 22px; padding: 13px; background: var(--poppy); color: #fff; border: none; border-radius: 8px; font-size: 15px; font-weight: 600; cursor: pointer; font-family: 'Work Sans', sans-serif; }
+  .submit-btn:disabled { background: var(--line); }
+  .error-msg { color: var(--danger); font-size: 12.5px; margin-top: 6px; }
+  .success-msg { background: var(--sage-light); color: var(--sage-dark); border: 1px solid var(--sage); border-radius: 8px; padding: 12px 14px; font-size: 14px; margin-bottom: 16px; }
+
+  .browse-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+  .browse-title { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: var(--ink-soft); }
+  .icon-btn { background: none; border: none; cursor: pointer; color: var(--ink); padding: 4px; font-size: 20px; line-height: 1; }
+
+  .filter-row { display: flex; gap: 6px; margin: 12px 0 16px; flex-wrap: wrap; }
+  .chip { font-size: 12px; font-weight: 500; padding: 6px 12px; border-radius: 20px; border: 1px solid var(--line); background: #fff; color: var(--ink-soft); cursor: pointer; }
+  .chip.active { background: var(--ink); color: #fff; border-color: var(--ink); }
+  .clay-filter-row { display: flex; gap: 6px; margin-bottom: 14px; flex-wrap: wrap; }
+
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(148px, 1fr)); gap: 12px; }
+  .tile { background: var(--card); border: 1px solid var(--line); border-radius: 10px 10px 4px 4px; overflow: hidden; cursor: pointer; }
+  .tile-photo { width: 100%; aspect-ratio: 1; background: #E5DDCB center/cover no-repeat; display: flex; align-items: center; justify-content: center; color: var(--ink-soft); font-size: 11px; }
+  .tile-label { padding: 8px 9px 9px; border-top: 1px solid var(--line); }
+  .tile-name { font-weight: 500; font-size: 12.5px; margin: 0 0 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .tile-meta { font-size: 10.5px; color: var(--ink-soft); margin: 0 0 5px; }
+  .badge { display: inline-block; font-size: 10.5px; font-weight: 500; padding: 2px 8px; border-radius: 20px; }
+  .badge-love { background: var(--sage-light); color: var(--sage-dark); }
+  .badge-mixed { background: var(--gold-light); color: #7A5C13; }
+  .badge-hate { background: var(--danger-light); color: var(--poppy-dark); }
+
+  .empty-state { text-align: center; padding: 50px 20px; color: var(--ink-soft); }
+  .empty-state .big { font-family: 'Fraunces', serif; font-size: 19px; color: var(--ink); margin-bottom: 6px; }
+
+  /* full screen detail */
+  #detailScreen, #searchScreen { display: none; position: fixed; inset: 0; background: var(--paper); z-index: 20; overflow-y: auto; }
+  #detailScreen.show, #searchScreen.show { display: block; }
+  .detail-header { display: flex; align-items: center; gap: 10px; padding: 16px 20px; border-bottom: 1px solid var(--line); position: sticky; top: 0; background: var(--paper); }
+  .detail-header .title { font-family: 'Fraunces', serif; font-size: 18px; font-weight: 600; flex: 1; }
+  .detail-body { padding: 16px 20px 60px; }
+  .detail-photos { display: flex; gap: 8px; margin-bottom: 16px; overflow-x: auto; scroll-snap-type: x mandatory; }
+  .detail-photos img { width: 100%; max-width: 340px; height: 260px; object-fit: cover; border-radius: 10px; flex-shrink: 0; scroll-snap-align: start; }
+  .detail-section-title { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: var(--ink-soft); margin: 20px 0 8px; }
+  .detail-row { display: flex; justify-content: space-between; gap: 12px; padding: 8px 0; border-bottom: 1px solid var(--line); font-size: 14px; }
+  .detail-row:last-child { border-bottom: none; }
+  .detail-row .k { color: var(--ink-soft); flex-shrink: 0; }
+  .detail-row .v { font-weight: 500; text-align: right; }
+
+  .reaction-tally { display: flex; gap: 8px; margin-bottom: 12px; }
+  .tally-item { flex: 1; text-align: center; border-radius: 8px; padding: 10px 4px; font-size: 12px; font-weight: 500; }
+  .tally-love { background: var(--sage-light); color: var(--sage-dark); }
+  .tally-mixed { background: var(--gold-light); color: #7A5C13; }
+  .tally-hate { background: var(--danger-light); color: var(--poppy-dark); }
+  .tally-item .count { font-family: 'Fraunces', serif; font-size: 20px; display: block; }
+
+  .react-picker { display: flex; gap: 8px; margin-bottom: 10px; }
+  .react-btn { flex: 1; padding: 10px 4px; border-radius: 8px; border: 1px solid var(--line); background: #fff; font-size: 12.5px; font-weight: 500; cursor: pointer; color: var(--ink-soft); }
+  .react-btn.selected.love { border-color: var(--sage-dark); background: var(--sage-light); color: var(--sage-dark); }
+  .react-btn.selected.mixed { border-color: var(--gold); background: var(--gold-light); color: #7A5C13; }
+  .react-btn.selected.hate { border-color: var(--poppy); background: var(--danger-light); color: var(--poppy-dark); }
+
+  .comment-list { display: flex; flex-direction: column; gap: 8px; margin-top: 14px; }
+  .comment-item { border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; background: #fff; font-size: 13.5px; }
+  .comment-item .tag { font-size: 10.5px; font-weight: 600; margin-bottom: 4px; display: inline-block; }
+
+  .delete-entry-btn { margin-top: 24px; width: 100%; padding: 10px; background: none; border: 1px solid var(--danger); color: var(--danger); border-radius: 6px; font-size: 13px; cursor: pointer; }
+
+  .search-bar { display: flex; align-items: center; gap: 8px; padding: 16px 20px; border-bottom: 1px solid var(--line); background: var(--paper); position: sticky; top: 0; }
+  .search-bar input { flex: 1; border: none; background: transparent; font-size: 16px; padding: 8px 0; }
+  .search-bar input:focus { outline: none; }
+  .results-list { padding: 12px 20px 40px; display: flex; flex-direction: column; gap: 8px; }
+  .result-row { display: flex; gap: 10px; align-items: center; border: 1px solid var(--line); border-radius: 10px; padding: 8px; background: var(--card); cursor: pointer; }
+  .result-row .photo { width: 54px; height: 54px; border-radius: 8px; background: #E5DDCB center/cover no-repeat; flex-shrink: 0; }
+  .result-row .info { flex: 1; min-width: 0; }
+  .result-row .info .name { font-size: 14px; font-weight: 500; margin: 0 0 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .result-row .info .sub { font-size: 12px; color: var(--ink-soft); margin: 0 0 5px; }
+
+  .loading-text { text-align: center; color: var(--ink-soft); padding: 40px; font-size: 14px; }
+
+  /* admin */
+  .admin-entry { border: 1px solid var(--line); border-radius: 8px; padding: 12px; margin-bottom: 10px; background: var(--card); }
+  .admin-entry .name { font-weight: 500; font-size: 14px; margin: 0 0 6px; }
+  .admin-comment { display: flex; justify-content: space-between; align-items: center; gap: 8px; border-top: 1px solid var(--line); padding: 6px 0; font-size: 12.5px; }
+  .admin-comment button { background: none; border: 1px solid var(--danger); color: var(--danger); border-radius: 5px; font-size: 11px; padding: 3px 8px; cursor: pointer; }
+
+  /* sakura intro, first visit only */
+  #petalLayer { position: fixed; inset: 0; pointer-events: none; overflow: hidden; z-index: 3; opacity: 0; transition: opacity 0.6s ease; }
+  #petalLayer.show { opacity: 1; }
+  #petalLayer .petal { position: absolute; top: -40px; height: auto; opacity: 0.95; animation-name: petal-fall; animation-timing-function: linear; animation-fill-mode: forwards; }
+  @keyframes petal-fall {
+    0% { transform: translate(0, 0) rotate(0deg); }
+    100% { transform: translate(var(--drift), 100vh) rotate(var(--spin)); }
+  }
+</style>
+</head>
+<body>
+
+<div id="petalLayer"></div>
+<audio id="petalSound" src="petal-sound.mp3" preload="auto"></audio>
+
+<div class="wrap">
+  <div class="app-header">
+    <img class="header-branch left" src="branch-left.png" alt="">
+    <img class="header-branch right" src="branch-right.png" alt="">
+    <h1>Secret Glaze Society</h1>
+    <p class="subtitle">Studio glaze log, shared with the group</p>
+  </div>
+
+  <div class="install-banner" id="installBanner">
+    <button class="dismiss" id="dismissInstall" aria-label="Dismiss">&times;</button>
+    <b>Keep this handy:</b> tap your browser's share icon, then "Add to Home Screen" (iPhone) or "Install app" (Android) so it opens like a regular app next time.
+  </div>
+
+  <div class="tabs" id="mainTabs">
+    <button class="tab active" data-tab="new">New entry</button>
+    <button class="tab" data-tab="browse">Browse log</button>
+    <button class="tab" data-tab="admin" id="adminTabBtn">Admin</button>
+  </div>
+
+  <div class="view active" id="view-new">
+    <div id="successBanner"></div>
+    <div class="card">
+      <label class="field-label">Your name <span class="req-star">*</span></label>
+      <input type="text" id="makerName" placeholder="Layla">
+
+      <label class="field-label">Email (kept private) <span class="req-star">*</span></label>
+      <input type="email" id="makerEmail" placeholder="your@email.com">
+
+      <label class="field-label">Piece name <span class="req-star">*</span></label>
+      <input type="text" id="pieceName" placeholder="Speckled tall vase">
+
+      <label class="field-label">Photos, up to 3 <span class="req-star">*</span></label>
+      <div class="photo-grid" id="photoGrid"></div>
+      <input type="file" id="photoInput" accept="image/*" style="display:none;">
+
+      <label class="field-label">Clay type <span class="req-star">*</span></label>
+      <div class="seg-row" id="claySeg">
+        <div class="seg-opt" data-val="White Clay">White Clay</div>
+        <div class="seg-opt" data-val="Hazelnut">Hazelnut</div>
+        <div class="seg-opt" data-val="Other">Other</div>
+      </div>
+      <input type="text" id="clayOtherInput" list="clayOtherOptions" placeholder="Name the clay" style="display:none; margin-top:8px;">
+      <datalist id="clayOtherOptions"></datalist>
+
+      <label class="field-label">Bisque fire &mdash; underglaze? <span class="req-star">*</span></label>
+      <div class="seg-row" id="underglazeSeg">
+        <div class="seg-opt" data-val="no">No</div>
+        <div class="seg-opt" data-val="yes">Yes</div>
+      </div>
+      <div id="underglazeDetails" style="display:none;">
+        <label class="field-label">Type</label>
+        <div class="seg-row" id="underglazeTypeSeg">
+          <div class="seg-opt" data-val="Underglaze">Underglaze</div>
+          <div class="seg-opt" data-val="Stroke & Glaze">Stroke &amp; Glaze</div>
+          <div class="seg-opt" data-val="Other">Other</div>
+        </div>
+        <input type="text" id="underglazeTypeOther" placeholder="Describe it" style="display:none; margin-top:8px;">
+        <label class="field-label">Method</label>
+        <input type="text" id="underglazeMethod" placeholder="Painted on, sprayed, thick layer for color...">
+      </div>
+
+      <label class="field-label">Glaze fire &mdash; layers <span class="req-star">*</span></label>
+      <div id="glazeLayers"></div>
+      <button type="button" class="add-layer-btn" id="addGlazeLayerBtn">+ Add glaze layer (up to 5)</button>
+
+      <label class="field-label">Result <span class="req-star">*</span></label>
+      <div class="seg-row" id="resultSeg">
+        <div class="seg-opt" data-val="love">Love it</div>
+        <div class="seg-opt" data-val="mixed">Mixed signals</div>
+        <div class="seg-opt" data-val="hate">Not my cup of tea</div>
+      </div>
+      <label class="field-label">Note (optional)</label>
+      <textarea id="resultNote" placeholder="What you'd repeat, what you'd change..."></textarea>
+
+      <label class="check-item" style="margin-top: 18px; align-items: flex-start;">
+        <input type="checkbox" id="tosCheck" style="margin-top: 2px;">
+        <span style="line-height: 1.4;">I agree to the Terms of Service and Privacy Policy, and understand my email is collected for future communications.</span>
+      </label>
+
+      <div id="formError" class="error-msg" style="display:none;"></div>
+      <button class="submit-btn" id="submitBtn">Save entry</button>
+    </div>
+  </div>
+
+  <div class="view" id="view-browse">
+    <div class="browse-top">
+      <span class="browse-title">Recent entries</span>
+      <button class="icon-btn" id="openSearchBtn" aria-label="Search">&#128269;</button>
+    </div>
+    <div class="filter-row">
+      <div class="chip active" data-filter="newest">Newest</div>
+      <div class="chip" data-filter="loved">Most loved</div>
+      <div class="chip" data-filter="clay">By clay type</div>
+    </div>
+    <div class="clay-filter-row" id="clayFilterRow" style="display:none;">
+      <div class="chip" data-clay="White Clay">White Clay</div>
+      <div class="chip" data-clay="Hazelnut">Hazelnut</div>
+      <div class="chip" data-clay="Other">Other</div>
+    </div>
+    <div id="feedContent"><div class="loading-text">Loading log...</div></div>
+  </div>
+
+  <div class="view" id="view-admin">
+    <p class="browse-title" style="margin-bottom:14px;">Moderation</p>
+    <div id="adminContent"><div class="loading-text">Loading...</div></div>
+  </div>
+</div>
+
+<div id="searchScreen">
+  <div class="search-bar">
+    <span style="font-size:18px;">&#128269;</span>
+    <input type="text" id="searchInput" placeholder="Search clay, glaze, piece name...">
+    <button class="icon-btn" id="closeSearchBtn" aria-label="Close">&times;</button>
+  </div>
+  <div class="results-list" id="resultsList"></div>
+</div>
+
+<div id="detailScreen">
+  <div class="detail-header">
+    <button class="icon-btn" id="closeDetailBtn" aria-label="Back">&larr;</button>
+    <span class="title" id="detailTitle"></span>
+  </div>
+  <div class="detail-body" id="detailBody"></div>
+</div>
+
+<script>
+// --- SUPABASE INITIALIZATION ---
+const supabaseUrl = 'https://ldgibazgenqydvjasclm.supabase.co';
+const supabaseKey = 'sb_publishable_1-vPBMYPwBez5ZGS1R7ZFw_X3MC2Ajk';
+const db = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+const CLAY_OPTIONS = ['White Clay', 'Hazelnut', 'Other'];
+let myOwnerId = null;
+let currentAdminUser = null;
+let entriesCache = [];
+let currentFeedFilter = 'newest';
+let currentClayFilter = null;
+
+const ENTRY_COLUMNS = 'id, owner_id, maker_name, piece_name, photos, clay_type, bisque_fire, glaze_fire, result, reactions, created_at, visibility';
+
+function uid() {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+    const r = Math.random() * 16 | 0;
+    const v = c === 'x' ? r : (r & 0x3 | 0x8);
+    return v.toString(16);
+  });
+}
+function escapeHtml(s) {
+  const d = document.createElement('div');
+  d.textContent = s || '';
+  return d.innerHTML;
+}
+
+function ensureOwnerId() {
+  myOwnerId = localStorage.getItem('hc_owner_id');
+  if (!myOwnerId) {
+    myOwnerId = uid();
+    localStorage.setItem('hc_owner_id', myOwnerId);
+  }
+}
+
+async function refreshAdminState() {
+  const { data } = await db.auth.getUser();
+  currentAdminUser = data && data.user ? data.user : null;
+}
+
+function checkInstallBanner() {
+  if (!localStorage.getItem('installDismissed')) document.getElementById('installBanner').classList.add('show');
+}
+document.getElementById('dismissInstall').addEventListener('click', () => {
+  localStorage.setItem('installDismissed', 'true');
+  document.getElementById('installBanner').classList.remove('show');
+});
+
+// Load Cached Email
+document.getElementById('makerEmail').value = localStorage.getItem('hc_email') || '';
+
+document.querySelectorAll('#mainTabs .tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('#mainTabs .tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+    tab.classList.add('active');
+    document.getElementById('view-' + tab.dataset.tab).classList.add('active');
+    if (tab.dataset.tab === 'browse') loadIndex();
+    if (tab.dataset.tab === 'admin') loadAdmin();
+  });
+});
+
+function setupSegGroup(containerId, onSelect) {
+  const container = document.getElementById(containerId);
+  let selected = null;
+  container.querySelectorAll('.seg-opt').forEach(opt => {
+    opt.addEventListener('click', () => {
+      container.querySelectorAll('.seg-opt').forEach(o => o.classList.remove('selected'));
+      opt.classList.add('selected');
+      selected = opt.dataset.val;
+      onSelect(selected);
+    });
+  });
+  return { get: () => selected, clear: () => { selected = null; container.querySelectorAll('.seg-opt').forEach(o => o.classList.remove('selected')); } };
+}
+
+const claySel = setupSegGroup('claySeg', (val) => { document.getElementById('clayOtherInput').style.display = val === 'Other' ? 'block' : 'none'; });
+const underglazeSel = setupSegGroup('underglazeSeg', (val) => { document.getElementById('underglazeDetails').style.display = val === 'yes' ? 'block' : 'none'; });
+const underglazeTypeSel = setupSegGroup('underglazeTypeSeg', (val) => { document.getElementById('underglazeTypeOther').style.display = val === 'Other' ? 'block' : 'none'; });
+const resultSel = setupSegGroup('resultSeg', () => {});
+
+// Photos
+let photos = [null, null, null];
+function renderPhotoGrid() {
+  const grid = document.getElementById('photoGrid');
+  grid.innerHTML = '';
+  for (let i = 0; i < 3; i++) {
+    const slot = document.createElement('div');
+    slot.className = 'photo-slot';
+    if (photos[i]) {
+      slot.innerHTML = `<img src="${photos[i]}"><button class="remove-x" data-idx="${i}">&times;</button>`;
+      slot.querySelector('.remove-x').addEventListener('click', (e) => {
+        e.stopPropagation();
+        photos[i] = null;
+        renderPhotoGrid();
+      });
+    } else {
+      slot.textContent = i === 0 ? 'Add photo' : '+';
+      slot.addEventListener('click', () => {
+        window._photoSlotIdx = i;
+        document.getElementById('photoInput').click();
+      });
+    }
+    grid.appendChild(slot);
+  }
+}
+renderPhotoGrid();
+
+document.getElementById('photoInput').addEventListener('change', (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    const img = new Image();
+    img.onload = () => {
+      const maxW = 800;
+      const scale = Math.min(1, maxW / img.width);
+      const canvas = document.createElement('canvas');
+      canvas.width = img.width * scale;
+      canvas.height = img.height * scale;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      photos[window._photoSlotIdx] = canvas.toDataURL('image/jpeg', 0.72);
+      renderPhotoGrid();
+    };
+    img.src = ev.target.result;
+  };
+  reader.readAsDataURL(file);
+  e.target.value = '';
+});
+
+// Helper: Convert DataURL to Blob for Upload
+async function dataUrlToBlob(dataUrl) {
+  const res = await fetch(dataUrl);
+  return await res.blob();
+}
+
+// Glaze layers
+let glazeLayerCount = 0;
+const LOCATION_OPTIONS = ['Rim', 'Interior', 'Exterior', 'Top third', 'Middle third', 'Bottom third / base', 'Full piece', 'Foot'];
+
+function addGlazeLayer() {
+  if (document.querySelectorAll('.layer-block').length >= 5) return;
+  glazeLayerCount++;
+  const localId = glazeLayerCount;
+  const block = document.createElement('div');
+  block.className = 'layer-block';
+  block.dataset.localId = localId;
+  block.innerHTML = `
+    <div class="layer-title"><span>Layer ${document.querySelectorAll('.layer-block').length + 1}</span><button type="button" class="remove-layer">Remove</button></div>
+    <label class="field-label">Name</label>
+    <div class="seg-row layer-name-seg">
+      <div class="seg-opt" data-val="Studio glaze">Studio glaze</div>
+      <div class="seg-opt" data-val="Commercial glaze">Commercial</div>
+      <div class="seg-opt" data-val="Other">Other</div>
+    </div>
+    <input type="text" class="layer-name-input" list="glazeNames-${localId}" placeholder="Type the glaze name" style="margin-top:8px;">
+    <datalist id="glazeNames-${localId}"></datalist>
+
+    <label class="field-label">Method</label>
+    <div class="seg-row layer-method-seg">
+      <div class="seg-opt" data-val="Dipped">Dipped</div>
+      <div class="seg-opt" data-val="Brushed on">Brushed on</div>
+      <div class="seg-opt" data-val="Other">Other</div>
+    </div>
+    <div class="seg-row layer-coat-seg" style="display:none; margin-top:8px;">
+      <div class="seg-opt" data-val="Thick coat">Thick coat</div>
+      <div class="seg-opt" data-val="Thin coat">Thin coat</div>
+    </div>
+    <input type="text" class="layer-method-other" placeholder="Describe the method" style="display:none; margin-top:8px;">
+
+    <label class="field-label">Location</label>
+    <div class="check-grid layer-location-checks">
+      ${LOCATION_OPTIONS.map((loc) => `<label class="check-item"><input type="checkbox" value="${loc}"> ${loc}</label>`).join('')}
+    </div>
+    <input type="text" class="layer-location-detail" placeholder="Any specific detail (optional)" style="margin-top:8px;">
+  `;
+  block.querySelector('.remove-layer').addEventListener('click', () => { block.remove(); renumberLayers(); });
+  const nameSeg = setupSegGroupInEl(block.querySelector('.layer-name-seg'), (val) => { populateGlazeNameOptions(block, val); });
+  block.querySelector('.layer-name-seg')._api = nameSeg;
+
+  const methodSeg = setupSegGroupInEl(block.querySelector('.layer-method-seg'), (val) => {
+    block.querySelector('.layer-coat-seg').style.display = val === 'Brushed on' ? 'flex' : 'none';
+    block.querySelector('.layer-method-other').style.display = val === 'Other' ? 'block' : 'none';
+  });
+  block.querySelector('.layer-method-seg')._api = methodSeg;
+  const coatSeg = setupSegGroupInEl(block.querySelector('.layer-coat-seg'), () => {});
+  block.querySelector('.layer-coat-seg')._api = coatSeg;
+
+  document.getElementById('glazeLayers').appendChild(block);
+}
+
+function setupSegGroupInEl(container, onSelect) {
+  let selected = null;
+  container.querySelectorAll('.seg-opt').forEach(opt => {
+    opt.addEventListener('click', () => {
+      container.querySelectorAll('.seg-opt').forEach(o => o.classList.remove('selected'));
+      opt.classList.add('selected');
+      selected = opt.dataset.val;
+      onSelect(selected);
+    });
+  });
+  return { get: () => selected };
+}
+
+function renumberLayers() {
+  document.querySelectorAll('.layer-block').forEach((block, i) => { block.querySelector('.layer-title span').textContent = 'Layer ' + (i + 1); });
+}
+
+function getStoredNames(key) {
+  try { return JSON.parse(localStorage.getItem(key)) || []; } catch(e) { return []; }
+}
+function saveStoredName(key, name) {
+  if (!name) return;
+  const names = getStoredNames(key);
+  if (!names.includes(name)) {
+    names.push(name);
+    localStorage.setItem(key, JSON.stringify(names));
+  }
+}
+
+function populateGlazeNameOptions(block, category) {
+  const dl = block.querySelector('datalist');
+  dl.innerHTML = '';
+  if (category === 'Other') return;
+  const key = category === 'Studio glaze' ? 'studio-glaze-names' : 'commercial-glaze-names';
+  getStoredNames(key).forEach(n => {
+    const opt = document.createElement('option');
+    opt.value = n;
+    dl.appendChild(opt);
+  });
+}
+
+function refreshClayOtherOptions() {
+  const dl = document.getElementById('clayOtherOptions');
+  dl.innerHTML = '';
+  getStoredNames('clay-other-names').forEach(n => {
+    const opt = document.createElement('option');
+    opt.value = n;
+    dl.appendChild(opt);
+  });
+}
+
+document.getElementById('addGlazeLayerBtn').addEventListener('click', addGlazeLayer);
+addGlazeLayer();
+
+document.getElementById('submitBtn').addEventListener('click', async () => {
+  const errorEl = document.getElementById('formError');
+  errorEl.style.display = 'none';
+  function showErr(msg) { errorEl.textContent = msg; errorEl.style.display = 'block'; }
+
+  const makerName = document.getElementById('makerName').value.trim();
+  const makerEmail = document.getElementById('makerEmail').value.trim();
+  const tosAgreed = document.getElementById('tosCheck').checked;
+  const pieceName = document.getElementById('pieceName').value.trim();
+  const photoList = photos.filter(p => p);
+  const clayType = claySel.get();
+  const clayOther = document.getElementById('clayOtherInput').value.trim();
+  const underglaze = underglazeSel.get();
+  const resultVal = resultSel.get();
+
+  if (!makerName) return showErr('Enter your name.');
+  if (!makerEmail || !makerEmail.includes('@')) return showErr('Enter a valid email.');
+  if (!pieceName) return showErr('Enter a piece name.');
+  if (photoList.length === 0) return showErr('Add at least one photo.');
+  if (!clayType) return showErr('Choose a clay type.');
+  if (clayType === 'Other' && !clayOther) return showErr('Name the clay type.');
+  if (!underglaze) return showErr('Answer whether it had underglaze.');
+
+  const layerBlocks = document.querySelectorAll('.layer-block');
+  if (layerBlocks.length === 0) return showErr('Add at least one glaze layer.');
+  const layers = [];
+  for (const block of layerBlocks) {
+    const nameCategory = block.querySelector('.layer-name-seg')._api.get();
+    const nameValue = block.querySelector('.layer-name-input').value.trim();
+    const methodType = block.querySelector('.layer-method-seg')._api.get();
+    const coat = block.querySelector('.layer-coat-seg')._api.get();
+    const methodOther = block.querySelector('.layer-method-other').value.trim();
+    const checked = Array.from(block.querySelectorAll('.layer-location-checks input:checked')).map(c => c.value);
+    const locationDetail = block.querySelector('.layer-location-detail').value.trim();
+
+    if (!nameCategory || !nameValue) return showErr('Fill in the glaze name for every layer.');
+    if (!methodType) return showErr('Choose a method for every layer.');
+    if (methodType === 'Brushed on' && !coat) return showErr('Choose thick or thin coat.');
+    if (methodType === 'Other' && !methodOther) return showErr('Describe the method for every layer.');
+    if (checked.length === 0) return showErr('Check at least one location per layer.');
+
+    layers.push({
+      name: { category: nameCategory, value: nameValue },
+      method: { type: methodType, coat: coat || null, other: methodType === 'Other' ? methodOther : null },
+      location: { checked, detail: locationDetail }
+    });
+  }
+
+  if (!resultVal) return showErr('Choose a result.');
+  if (!tosAgreed) return showErr('You must agree to the TOS and Privacy Policy.');
+
+  const submitBtn = document.getElementById('submitBtn');
+  submitBtn.disabled = true;
+  submitBtn.textContent = 'Uploading photos...';
+
+  try {
+    // 1. Upload Photos to Supabase Storage
+    const photoUrls = [];
+    for (const p of photoList) {
+      const blob = await dataUrlToBlob(p);
+      const filename = `${Date.now()}-${Math.random().toString(36).substring(7)}.jpg`;
+      const { data, error: uploadErr } = await db.storage.from('glaze-photos').upload(filename, blob, { contentType: 'image/jpeg' });
+      if (uploadErr) throw new Error("Photo upload failed");
+      const { data: { publicUrl } } = db.storage.from('glaze-photos').getPublicUrl(filename);
+      photoUrls.push(publicUrl);
+    }
+
+    submitBtn.textContent = 'Saving entry...';
+
+    // 2. Insert into Supabase DB
+    const entry = {
+      owner_id: myOwnerId,
+      maker_name: makerName,
+      email: makerEmail,
+      visibility: 'public',
+      piece_name: pieceName,
+      photos: photoUrls,
+      clay_type: clayType === 'Other' ? clayOther : clayType,
+      bisque_fire: {
+        hasUnderglaze: underglaze === 'yes',
+        type: underglaze === 'yes' ? (underglazeTypeSel.get() === 'Other' ? document.getElementById('underglazeTypeOther').value.trim() : underglazeTypeSel.get()) : null,
+        method: underglaze === 'yes' ? document.getElementById('underglazeMethod').value.trim() : null
+      },
+      glaze_fire: { layers },
+      result: { verdict: resultVal, note: document.getElementById('resultNote').value.trim() },
+      reactions: []
+    };
+
+    const { error: dbErr } = await db.from('glaze_entries').insert([entry]);
+    if (dbErr) throw new Error("Database save failed");
+
+    // Save preferences locally
+    localStorage.setItem('hc_email', makerEmail);
+    if (clayType === 'Other') saveStoredName('clay-other-names', clayOther);
+    for (const l of layers) saveStoredName(l.name.category === 'Studio glaze' ? 'studio-glaze-names' : 'commercial-glaze-names', l.name.value);
+
+    document.getElementById('successBanner').innerHTML = '<div class="success-msg">Entry saved to the studio log.</div>';
+    resetForm();
+    loadIndex();
+  } catch (e) {
+    showErr(e.message || String(e));
+  }
+  
+  submitBtn.disabled = false;
+  submitBtn.textContent = 'Save entry';
+});
+
+function resetForm() {
+  document.getElementById('makerName').value = '';
+  document.getElementById('pieceName').value = '';
+  photos = [null, null, null];
+  renderPhotoGrid();
+  claySel.clear();
+  document.getElementById('clayOtherInput').value = '';
+  document.getElementById('clayOtherInput').style.display = 'none';
+  underglazeSel.clear();
+  document.getElementById('underglazeDetails').style.display = 'none';
+  underglazeTypeSel.clear();
+  document.getElementById('underglazeTypeOther').value = '';
+  document.getElementById('underglazeTypeOther').style.display = 'none';
+  document.getElementById('underglazeMethod').value = '';
+  document.getElementById('glazeLayers').innerHTML = '';
+  glazeLayerCount = 0;
+  addGlazeLayer();
+  resultSel.clear();
+  document.getElementById('resultNote').value = '';
+  refreshClayOtherOptions();
+}
+
+// Browse / feed
+document.querySelectorAll('#view-browse .filter-row .chip').forEach(chip => {
+  chip.addEventListener('click', () => {
+    document.querySelectorAll('#view-browse .filter-row .chip').forEach(c => c.classList.remove('active'));
+    chip.classList.add('active');
+    currentFeedFilter = chip.dataset.filter;
+    document.getElementById('clayFilterRow').style.display = currentFeedFilter === 'clay' ? 'flex' : 'none';
+    if (currentFeedFilter !== 'clay') currentClayFilter = null;
+    renderFeed();
+  });
+});
+document.querySelectorAll('#clayFilterRow .chip').forEach(chip => {
+  chip.addEventListener('click', () => {
+    document.querySelectorAll('#clayFilterRow .chip').forEach(c => c.classList.remove('active'));
+    chip.classList.add('active');
+    currentClayFilter = chip.dataset.clay;
+    renderFeed();
+  });
+});
+
+async function loadIndex() {
+  document.getElementById('feedContent').innerHTML = '<div class="loading-text">Loading log...</div>';
+  const { data, error } = await db.from('glaze_entries').select(ENTRY_COLUMNS).order('created_at', { ascending: false });
+  entriesCache = data || [];
+  renderFeed();
+}
+
+function visibleEntries() {
+  return entriesCache;
+}
+
+function renderFeed() {
+  let visible = visibleEntries();
+  if (currentFeedFilter === 'loved') {
+    visible = visible.slice().sort((a, b) => {
+      const aLove = (a.reactions || []).filter(r => r.type === 'love').length;
+      const bLove = (b.reactions || []).filter(r => r.type === 'love').length;
+      return bLove - aLove;
+    });
+  } else if (currentFeedFilter === 'clay' && currentClayFilter) {
+    visible = visible.filter(e => e.clay_type === currentClayFilter);
+  }
+
+  const container = document.getElementById('feedContent');
+  if (visible.length === 0) {
+    container.innerHTML = '<div class="empty-state"><div class="big">No entries yet</div>Save your first piece from the New entry tab.</div>';
+    return;
+  }
+  const grid = document.createElement('div');
+  grid.className = 'grid';
+  visible.forEach(e => grid.appendChild(makeTile(e)));
+  container.innerHTML = '';
+  container.appendChild(grid);
+}
+
+function badgeHtml(resultVal) {
+  const map = { love: ['Love it', 'badge-love'], mixed: ['Mixed signals', 'badge-mixed'], hate: ['Not my cup of tea', 'badge-hate'] };
+  const m = map[resultVal] || ['', ''];
+  return `<span class="badge ${m[1]}">${m[0]}</span>`;
+}
+
+function makeTile(e) {
+  const tile = document.createElement('div');
+  tile.className = 'tile';
+  const photoUrl = (e.photos && e.photos.length > 0) ? e.photos[0] : null;
+  const photoDiv = photoUrl ? `<div class="tile-photo" style="background-image: url('${photoUrl}')"></div>` : `<div class="tile-photo">No photo</div>`;
+  tile.innerHTML = `
+    ${photoDiv}
+    <div class="tile-label">
+      <p class="tile-name">${escapeHtml(e.piece_name)}</p>
+      <p class="tile-meta">${escapeHtml(e.clay_type)} &middot; ${escapeHtml(e.maker_name)}</p>
+      ${badgeHtml(e.result.verdict)}
+    </div>
+  `;
+  tile.addEventListener('click', () => openDetail(e.id));
+  return tile;
+}
+
+// Search
+document.getElementById('openSearchBtn').addEventListener('click', () => {
+  document.getElementById('searchScreen').classList.add('show');
+  document.getElementById('searchInput').value = '';
+  document.getElementById('resultsList').innerHTML = '';
+  document.getElementById('searchInput').focus();
+});
+document.getElementById('closeSearchBtn').addEventListener('click', () => { document.getElementById('searchScreen').classList.remove('show'); });
+document.getElementById('searchInput').addEventListener('input', (e) => {
+  const q = e.target.value.trim().toLowerCase();
+  const list = document.getElementById('resultsList');
+  if (!q) { list.innerHTML = ''; return; }
+  const matches = visibleEntries().filter(item => {
+    const glazes = item.glaze_fire.layers.map(l => l.name.value.toLowerCase());
+    return item.piece_name.toLowerCase().includes(q) || item.clay_type.toLowerCase().includes(q) || item.maker_name.toLowerCase().includes(q) || glazes.some(g => g.includes(q));
+  });
+  if (matches.length === 0) { list.innerHTML = '<div class="empty-state">No matches yet</div>'; return; }
+  
+  list.innerHTML = matches.map(item => {
+    const glazesStr = item.glaze_fire.layers.map(l => l.name.value).join(', ');
+    const photoDiv = (item.photos && item.photos[0]) ? `<div class="photo" style="background-image: url('${item.photos[0]}')"></div>` : `<div class="photo"></div>`;
+    return `
+      <div class="result-row" data-id="${item.id}">
+        ${photoDiv}
+        <div class="info">
+          <p class="name">${escapeHtml(item.piece_name)}</p>
+          <p class="sub">${escapeHtml(item.clay_type)} &middot; ${escapeHtml(glazesStr)}</p>
+          ${badgeHtml(item.result.verdict)}
+        </div>
+      </div>
+    `;
+  }).join('');
+  list.querySelectorAll('.result-row').forEach(row => {
+    row.addEventListener('click', () => { document.getElementById('searchScreen').classList.remove('show'); openDetail(row.dataset.id); });
+  });
+});
+
+// Detail screen
+async function openDetail(id) {
+  const entry = entriesCache.find(e => e.id === id);
+  if (!entry) return;
+
+  document.getElementById('detailTitle').textContent = entry.piece_name;
+  const body = document.getElementById('detailBody');
+  const isMine = entry.owner_id === myOwnerId;
+  const date = new Date(entry.created_at).toLocaleDateString();
+
+  const layersHtml = entry.glaze_fire.layers.map((l, i) => `
+    <div class="detail-row"><span class="k">Layer ${i + 1}</span><span class="v">${escapeHtml(l.name.value)} (${escapeHtml(l.name.category)})</span></div>
+    <div class="detail-row"><span class="k">Method</span><span class="v">${escapeHtml(l.method.type)}${l.method.coat ? ' &mdash; ' + escapeHtml(l.method.coat) : ''}${l.method.other ? ' &mdash; ' + escapeHtml(l.method.other) : ''}</span></div>
+    <div class="detail-row"><span class="k">Location</span><span class="v">${escapeHtml(l.location.checked.join(', '))}${l.location.detail ? ' &mdash; ' + escapeHtml(l.location.detail) : ''}</span></div>
+  `).join('');
+
+  const reactions = entry.reactions || [];
+  const counts = { love: 0, mixed: 0, hate: 0 };
+  reactions.forEach(r => { if (counts[r.type] !== undefined) counts[r.type]++; });
+
+  body.innerHTML = `
+    <div class="detail-photos">${entry.photos.map(p => `<img src="${p}">`).join('')}</div>
+    <div class="detail-row"><span class="k">Made by</span><span class="v">${escapeHtml(entry.maker_name)}</span></div>
+    <div class="detail-row"><span class="k">Date</span><span class="v">${date}</span></div>
+    <div class="detail-row"><span class="k">Clay type</span><span class="v">${escapeHtml(entry.clay_type)}</span></div>
+
+    <div class="detail-section-title">Bisque fire</div>
+    <div class="detail-row"><span class="k">Underglaze</span><span class="v">${entry.bisque_fire.hasUnderglaze ? 'Yes' : 'No'}</span></div>
+    ${entry.bisque_fire.hasUnderglaze ? `
+      <div class="detail-row"><span class="k">Type</span><span class="v">${escapeHtml(entry.bisque_fire.type || '')}</span></div>
+      <div class="detail-row"><span class="k">Method</span><span class="v">${escapeHtml(entry.bisque_fire.method || '')}</span></div>
+    ` : ''}
+
+    <div class="detail-section-title">Glaze fire</div>
+    ${layersHtml}
+
+    <div class="detail-section-title">Maker's verdict</div>
+    <div class="detail-row"><span class="k">Result</span><span class="v">${badgeHtml(entry.result.verdict)}</span></div>
+    ${entry.result.note ? `<div class="detail-row"><span class="k">Note</span><span class="v">${escapeHtml(entry.result.note)}</span></div>` : ''}
+
+    <div class="detail-section-title">What others think</div>
+    <div class="reaction-tally">
+      <div class="tally-item tally-love"><span class="count">${counts.love}</span>Love it</div>
+      <div class="tally-item tally-mixed"><span class="count">${counts.mixed}</span>Mixed signals</div>
+      <div class="tally-item tally-hate"><span class="count">${counts.hate}</span>Not my cup of tea</div>
+    </div>
+    <div class="react-picker" id="reactPicker">
+      <div class="react-btn" data-val="love">Love it</div>
+      <div class="react-btn" data-val="mixed">Mixed signals</div>
+      <div class="react-btn" data-val="hate">Not my cup of tea</div>
+    </div>
+    <textarea id="reactComment" placeholder="Leave a comment (optional)"></textarea>
+    <button class="submit-btn" id="submitReactBtn">Add reaction</button>
+    <div class="comment-list" id="commentList">
+      ${reactions.slice().reverse().map(r => `
+        <div class="comment-item">
+          <span class="tag" style="color:${r.type === 'love' ? 'var(--sage-dark)' : r.type === 'mixed' ? '#7A5C13' : 'var(--poppy-dark)'}">${r.type === 'love' ? 'Love it' : r.type === 'mixed' ? 'Mixed signals' : 'Not my cup of tea'}</span>
+          ${r.comment ? `<p style="margin:2px 0 0;">${escapeHtml(r.comment)}</p>` : ''}
+        </div>
+      `).join('')}
+    </div>
+    ${isMine || currentAdminUser ? '<button class="delete-entry-btn" id="deleteEntryBtn">Delete this entry</button>' : ''}
+  `;
+
+  let selectedReaction = null;
+  body.querySelectorAll('.react-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      body.querySelectorAll('.react-btn').forEach(b => b.classList.remove('selected', 'love', 'mixed', 'hate'));
+      btn.classList.add('selected', btn.dataset.val);
+      selectedReaction = btn.dataset.val;
+    });
+  });
+
+  document.getElementById('submitReactBtn').addEventListener('click', async () => {
+    if (!selectedReaction) return;
+    const btn = document.getElementById('submitReactBtn');
+    btn.disabled = true;
+    btn.textContent = 'Adding...';
+    
+    const newReact = { id: uid(), type: selectedReaction, comment: document.getElementById('reactComment').value.trim(), createdAt: Date.now() };
+    const updatedReactions = [...(entry.reactions || []), newReact];
+    
+    const { error } = await db.from('glaze_entries').update({ reactions: updatedReactions }).eq('id', id);
+    if (!error) {
+      entry.reactions = updatedReactions;
+      openDetail(id);
+    } else {
+      btn.textContent = 'Could not add, try again';
+      btn.disabled = false;
+    }
+  });
+
+  const delBtn = document.getElementById('deleteEntryBtn');
+  if (delBtn) {
+    delBtn.addEventListener('click', async () => {
+      delBtn.textContent = 'Deleting...';
+      delBtn.disabled = true;
+      await db.from('glaze_entries').delete().eq('id', id);
+      document.getElementById('detailScreen').classList.remove('show');
+      loadIndex();
+    });
+  }
+  document.getElementById('detailScreen').classList.add('show');
+}
+document.getElementById('closeDetailBtn').addEventListener('click', () => { document.getElementById('detailScreen').classList.remove('show'); });
+
+// Admin view
+async function loadAdmin() {
+  const container = document.getElementById('adminContent');
+  await refreshAdminState();
+
+  if (!currentAdminUser) {
+    container.innerHTML = `
+      <div class="card">
+        <label class="field-label">Admin email</label>
+        <input type="email" id="adminEmail" placeholder="you@example.com">
+        <label class="field-label">Password</label>
+        <input type="text" id="adminPassword" placeholder="Password" style="-webkit-text-security: disc;">
+        <div id="adminLoginError" class="error-msg" style="display:none;"></div>
+        <button class="submit-btn" id="adminLoginBtn">Sign in</button>
+      </div>
+    `;
+    document.getElementById('adminLoginBtn').addEventListener('click', async () => {
+      const email = document.getElementById('adminEmail').value.trim();
+      const password = document.getElementById('adminPassword').value;
+      const errEl = document.getElementById('adminLoginError');
+      errEl.style.display = 'none';
+      if (!email || !password) {
+        errEl.textContent = 'Enter your email and password.';
+        errEl.style.display = 'block';
+        return;
+      }
+      const btn = document.getElementById('adminLoginBtn');
+      btn.disabled = true;
+      btn.textContent = 'Signing in...';
+      const { error } = await db.auth.signInWithPassword({ email, password });
+      if (error) {
+        errEl.textContent = 'Could not sign in. Check your email and password.';
+        errEl.style.display = 'block';
+        btn.disabled = false;
+        btn.textContent = 'Sign in';
+        return;
+      }
+      loadAdmin();
+    });
+    return;
+  }
+
+  container.innerHTML = `
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+      <span style="font-size:13px; color:var(--ink-soft);">Signed in as ${escapeHtml(currentAdminUser.email || '')}</span>
+      <button class="icon-btn" id="adminSignOutBtn" style="font-size:13px;">Sign out</button>
+    </div>
+    <div class="loading-text">Loading...</div>
+  `;
+  document.getElementById('adminSignOutBtn').addEventListener('click', async () => {
+    await db.auth.signOut();
+    currentAdminUser = null;
+    loadAdmin();
+  });
+
+  const { data, error } = await db.from('glaze_entries').select(ENTRY_COLUMNS).order('created_at', { ascending: false });
+  const listWrap = document.createElement('div');
+  if (!data || data.length === 0) {
+    listWrap.innerHTML = '<div class="empty-state">No entries yet.</div>';
+  } else {
+    data.forEach(full => {
+      const block = document.createElement('div');
+      block.className = 'admin-entry';
+      const reactions = full.reactions || [];
+      block.innerHTML = `
+        <p class="name">${escapeHtml(full.piece_name)} &middot; ${escapeHtml(full.maker_name)}</p>
+        ${reactions.length === 0 ? '<p style="font-size:12px;color:var(--ink-soft);margin:0;">No reactions yet</p>' : reactions.map(r => `
+          <div class="admin-comment">
+            <span>${r.type}${r.comment ? ': ' + escapeHtml(r.comment) : ''}</span>
+            <button data-entry="${full.id}" data-reaction="${r.id}">Delete</button>
+          </div>
+        `).join('')}
+      `;
+      block.querySelectorAll('.admin-comment button').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          const entryId = btn.dataset.entry;
+          const reactionId = btn.dataset.reaction;
+          const e2 = data.find(x => x.id === entryId);
+          const newReactions = e2.reactions.filter(r => r.id !== reactionId);
+          await db.from('glaze_entries').update({ reactions: newReactions }).eq('id', entryId);
+          loadAdmin();
+        });
+      });
+      listWrap.appendChild(block);
+    });
+  }
+  container.appendChild(listWrap);
+  container.querySelector('.loading-text')?.remove();
+}
+
+// Sakura intro, plays once per device on first tap into the name field
+function initPetalIntro() {
+  const SEEN_KEY = 'sgs_petal_intro_seen';
+  if (localStorage.getItem(SEEN_KEY)) return;
+
+  const nameInput = document.getElementById('makerName');
+  const layer = document.getElementById('petalLayer');
+  const sound = document.getElementById('petalSound');
+
+  function playIntro() {
+    localStorage.setItem(SEEN_KEY, 'true');
+    layer.classList.add('show');
+
+    const petalImages = ['petal-a.png', 'petal-b.png'];
+    const petalCount = 22;
+    for (let i = 0; i < petalCount; i++) {
+      const petal = document.createElement('img');
+      petal.className = 'petal';
+      petal.src = petalImages[Math.floor(Math.random() * petalImages.length)];
+      const startX = Math.random() * 100;
+      const drift = (Math.random() * 140 - 70) + 'px';
+      const spin = (Math.random() * 360 - 180) + 'deg';
+      const duration = 3.5 + Math.random() * 3;
+      const delay = Math.random() * 3;
+      const width = 18 + Math.random() * 14;
+      petal.style.left = startX + 'vw';
+      petal.style.width = width + 'px';
+      petal.style.setProperty('--drift', drift);
+      petal.style.setProperty('--spin', spin);
+      petal.style.animationDuration = duration + 's';
+      petal.style.animationDelay = delay + 's';
+      layer.appendChild(petal);
+    }
+
+    sound.currentTime = 0;
+    sound.play().catch(() => {});
+
+    setTimeout(() => {
+      layer.classList.remove('show');
+      setTimeout(() => { layer.innerHTML = ''; }, 700);
+    }, 10000);
+  }
+
+  nameInput.addEventListener('focus', playIntro, { once: true });
+}
+
+(function init() {
+  ensureOwnerId();
+  refreshAdminState();
+  checkInstallBanner();
+  refreshClayOtherOptions();
+  loadIndex();
+  initPetalIntro();
+})();
+</script>
+</body>
+</html>
